@@ -1,7 +1,7 @@
 /*
  * canutils/canconfig.c
  *
- * Copyright (C) 2005, 2008 Marc Kleine-Budde <mkl@pengutronix.de>, Pengutronix
+ * Copyright (C) 2005, 2008, 2010 Marc Kleine-Budde <mkl@pengutronix.de>, Pengutronix
  * Copyright (C) 2007 Juergen Beisert <jbe@pengutronix.de>, Pengutronix
  * Copyright (C) 2009 Luotao Fu <l.fu@pengutronix.de>, Pengutronix
  *
@@ -38,19 +38,19 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-const char *can_states[CAN_STATE_MAX] = {
+static const char *can_states[CAN_STATE_MAX] = {
 	"ERROR-ACTIVE",
 	"ERROR-WARNING",
 	"ERROR-PASSIVE",
 	"BUS-OFF",
 	"STOPPED",
-	"SLEEPING"
+	"SLEEPING",
 };
 
-const char *config_keywords[] = {
-		"baudrate", "bitrate", "bittiming", "ctrlmode", "restart",
-		"start", "stop", "restart-ms", "state", "clockfreq",
-		"bittiming-const", "berr-counter"};
+static const char *config_keywords[] = {
+	"baudrate", "bitrate", "bittiming", "ctrlmode", "restart",
+	"start", "stop", "restart-ms", "state", "clockfreq",
+	"bittiming-const", "berr-counter" };
 
 /* this is shamelessly stolen from iproute and slightly modified */
 #define NEXT_ARG() \
@@ -58,12 +58,12 @@ const char *config_keywords[] = {
 		argv++; \
 		if (--argc < 0) { \
 			fprintf(stderr, "missing parameter for %s\n", *argv); \
-			exit(EXIT_FAILURE);\
-		}\
+			exit(EXIT_FAILURE); \
+		} \
 	} while(0)
 
 static inline int find_str(const char** haystack, unsigned int stack_size,
-		const char* needle)
+			   const char* needle)
 {
 	int i, found = 0;
 
@@ -153,8 +153,8 @@ static void cmd_bitrate(int argc, char *argv[], const char *name)
 
 	if (argc > 0)
 		show_only = find_str(config_keywords,
-				sizeof(config_keywords) / sizeof(char*),
-				argv[1]);
+				     sizeof(config_keywords) / sizeof(char*),
+				     argv[1]);
 
 	if (! show_only)
 		do_set_bitrate(argc, argv, name);
@@ -207,8 +207,8 @@ static void do_set_bittiming(int argc, char *argv[], const char *name)
 	 * parameters have to be set */
 	if (bt_par_count < 4) {
 		fprintf(stderr, "%s: missing bittiming parameters, "
-				"try help to figure out the correct format\n",
-				name);
+			"try help to figure out the correct format\n",
+			name);
 		exit(1);
 	}
 	if (can_set_bittiming(name, &bt) < 0) {
@@ -238,8 +238,8 @@ static void cmd_bittiming(int argc, char *argv[], const char *name)
 
 	if (argc > 0)
 		show_only = find_str(config_keywords,
-				sizeof(config_keywords) / sizeof(char*),
-				argv[1]);
+				     sizeof(config_keywords) / sizeof(char*),
+				     argv[1]);
 
 	if (! show_only)
 		do_set_bittiming(argc, argv, name);
@@ -297,7 +297,7 @@ static void do_show_clockfreq(const char *name)
 	memset(&clock, 0, sizeof(struct can_clock));
 	if (can_get_clock(name, &clock) < 0) {
 		fprintf(stderr, "%s: failed to get clock parameters\n",
-				name);
+			name);
 		exit(EXIT_FAILURE);
 	}
 
@@ -380,7 +380,7 @@ static void do_show_ctrlmode(const char *name)
 
 /* this is shamelessly stolen from iproute and slightly modified */
 static inline void set_ctrlmode(char* name, char *arg,
-			 struct can_ctrlmode *cm, __u32 flags)
+				struct can_ctrlmode *cm, __u32 flags)
 {
 	if (strcmp(arg, "on") == 0) {
 		cm->flags |= flags;
@@ -437,8 +437,8 @@ static void cmd_ctrlmode(int argc, char *argv[], const char *name)
 
 	if (argc > 0)
 		show_only = find_str(config_keywords,
-				sizeof(config_keywords) / sizeof(char*),
-				argv[1]);
+				     sizeof(config_keywords) / sizeof(char*),
+				     argv[1]);
 
 	if (! show_only)
 		do_set_ctrlmode(argc, argv, name);
@@ -461,7 +461,7 @@ static void do_show_restart_ms(const char *name)
 static void do_set_restart_ms(int argc, char* argv[], const char *name)
 {
 	if (can_set_restart_ms(name,
-				(__u32)strtoul(argv[1], NULL, 10)) < 0) {
+			       (__u32)strtoul(argv[1], NULL, 10)) < 0) {
 		fprintf(stderr, "failed to set restart_ms of %s to %lu\n",
 		       	name, strtoul(argv[1], NULL, 10));
 		exit(EXIT_FAILURE);
@@ -474,8 +474,8 @@ static void cmd_restart_ms(int argc, char *argv[], const char *name)
 
 	if (argc > 0)
 		show_only = find_str(config_keywords,
-				sizeof(config_keywords) / sizeof(char*),
-				argv[1]);
+				     sizeof(config_keywords) / sizeof(char*),
+				     argv[1]);
 
 	if (! show_only)
 		do_set_restart_ms(argc, argv, name);
