@@ -32,6 +32,7 @@ static bool running = true;
 static bool infinite = true;
 static unsigned int drop_until_quit;
 static unsigned int drop_count;
+static bool canid_increasing = false;
 static bool use_poll = false;
 
 static unsigned int loopcount = 1;
@@ -59,7 +60,7 @@ static void print_usage(char *prg)
 		"\n"
 		"Options:\n"
 		" -e, --extended		send extended frame\n"
-		" -i, --identifier=ID	CAN Identifier (default = %u)\n"
+		" -i, --identifier=ID	CAN Identifier (default = %u), 'i' for rising sequence of CAN IDs\n"
 		"     --loop=COUNT	send message COUNT times\n"
 		" -p, --poll		use poll(2) to wait for buffer space while sending\n"
 		" -q, --quit <num>	quit if <num> wrong sequences are encountered\n"
@@ -274,7 +275,10 @@ int main(int argc, char **argv)
 			break;
 
 		case 'i':
-			filter->can_id = strtoul(optarg, NULL, 0);
+			if (optarg[0] == 'i')
+				canid_increasing = true;
+			else
+				filter->can_id = strtoul(optarg, NULL, 0);
 			break;
 
 		case 'r':
@@ -326,11 +330,13 @@ int main(int argc, char **argv)
 		interface = argv[optind];
 
 	if (extended) {
-		filter->can_mask = CAN_EFF_MASK;
+		if (!canid_increasing)
+			filter->can_mask = CAN_EFF_MASK;
 		filter->can_id  &= CAN_EFF_MASK;
 		filter->can_id  |= CAN_EFF_FLAG;
 	} else {
-		filter->can_mask = CAN_SFF_MASK;
+		if (!canid_increasing)
+			filter->can_mask = CAN_SFF_MASK;
 		filter->can_id  &= CAN_SFF_MASK;
 	}
 	frame.can_id = filter->can_id;
